@@ -55,10 +55,19 @@ if ($begin -gt 0 -and $final -gt $begin) {
   if ($src -eq 0 -and $toggle -ne 0) {$old = $cli; $new = $srv} elseif ($src -eq 1 -and $toggle -ne 1) {$old = $srv; $new = $cli}
   else {write-host "`n:) $input already has TPM patch $toggle"; $f.Dispose(); return}
   $t = $t.Replace($old, $new); $t; $b = [Text.Encoding]::GetEncoding(28591).GetBytes($t); $f.Seek(-$x, 1) >''; $f.Write($b, 0, $x)
-  if ($src -eq 1) {write-host "`n :D TPM patch removed" -fore Green} else {write-host "`n:D TPM patch added" -fore Green} 
+  if ($src -eq 1) {write-host "`n :D TPM patch removed" -fore Green
+           } else {write-host "`n:D TPM patch added" -fore Green
+  } 
   $f.Dispose(); [GC]::Collect()
+
+  #:: rename .Iso or .ISo to indicate if sans patch or SERVER PATCH
+  $fn=$input.name
+  if ($src -eq 1) {  $fx= '.',($fn[-3]    -join "").ToUpper(),($fn[-2,-1] -join "").ToLower() -join ""
+  } else {           $fx= '.',($fn[-3,-2] -join "").ToUpper(),($fn[   -1] -join "").ToLower() -join ""  }
+  Rename-Item -path $fn -NewName ($fn -replace $fx,$fx) 
+  write-host "renamed $fx"
 } else {write-host "`n;( TPM patch failed" -fore Red; $f.Dispose()}
 
 #:: how quick was that??
-$(get-date) - $script:timer
+write-host "in",($(get-date) - $script:timer).TotalSeconds, "seconds"
 #:: done
